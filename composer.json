@@ -1,0 +1,25 @@
+{
+    "name": "Fennay/model-helper",
+    "description": "ORM Model Helper",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Fennay",
+            "email": "feng@fennay.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Fennay\\ModelHelper\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Fennay\\ModelHelper\\": "test"
+        }
+    },
+    "require": {
+        "illuminate/database": "^5.1",
+        "illuminate/support": "^5.1"
+    }
+}
