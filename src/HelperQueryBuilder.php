@@ -104,32 +104,28 @@ class HelperQueryBuilder extends Builder
     public function applyWhere(array $where)
     {
         if (!empty($where)) {
-
             //例如 ['name' => ['like'=> 'sss']]
             foreach ($where as $key => $value) {
-
                 // 如果第二个参数是字符串，则表示默认使用 = 操作符
-                if (!is_array($value['1'])) {
+                if (is_array($value['1'])) {
+                    // 第二个参数是数组
+                    switch (!empty($value['0']) && strtolower($value['0'])) {
+                        case 'in' :
+                            $this->whereIn($key, $value[1]);
+                            break;
+                        case 'between' :
+                            // 例子 $where = ['age',['between',[1,10]]];
+                            $this->whereBetween($key, $value[1]);
+                            break;
+                        case 'notbetween' :
+                            // 例子 $where = ['age',['notbetween',[1,10]]];
+                            $this->whereNotBetween($key, $value[1]);
+                            break;
+                        default:
+                            $this->where($key, $value[0], $value[1]);
+                    }
+                } else {
                     $this->where($key, $value);
-
-                    return $this;
-                }
-
-                // 第二个参数是数组
-                switch (!empty($value['0']) && strtolower($value['0'])) {
-                    case 'in' :
-                        $this->model->whereIn($key, $value[1]);
-                        break;
-                    case 'between' :
-                        // 例子 $where = ['age',['between',[1,10]]];
-                        $this->model->whereBetween($key, $value[1]);
-                        break;
-                    case 'notbetween' :
-                        // 例子 $where = ['age',['notbetween',[1,10]]];
-                        $this->model->NotBetween($key, $value[1]);
-                        break;
-                    default:
-                        $this->model->where($key, $value[0], $value[1]);
                 }
 
             }
