@@ -24,7 +24,7 @@ class HelperQueryBuilder extends Builder
      * @return mixed
      * @author: Mikey
      */
-    public function findOne(array $where, $orderBy = ['id' => 'desc'])
+    public function findOne(array $where, array $orderBy = ['id' => 'desc'])
     {
         $this->applyWHere($where);
         $this->applyOrder($orderBy);
@@ -34,11 +34,11 @@ class HelperQueryBuilder extends Builder
 
     /**
      * 根据ID获取一条数据
-     * @param $id
+     * @param int $id
      * @return mixed
      * @author: Mikey
      */
-    public function getOne($id)
+    public function getOne(int $id)
     {
         return $this->applyWhere(['id' => $id])->applyOrder(['id' => 'desc'])->first();
     }
@@ -51,7 +51,7 @@ class HelperQueryBuilder extends Builder
      * @param int   $skip
      * @return mixed
      */
-    public function getList(array $where, $size = null, $order = ['id' => 'desc'], $skip = null)
+    public function getList(array $where, int $size = 0, array $order = ['id' => 'desc'], int $skip = 0)
     {
         $this->applyWhere($where)->applyOrder($order);
         if (!empty($size)) {
@@ -70,12 +70,12 @@ class HelperQueryBuilder extends Builder
      * @param array  $where
      * @param int    $pageSize
      * @param array  $order
-     * @param string $field
+     * @param array $field
      * @param string $pageName
      * @return mixed
      * @author: Mikey
      */
-    public function getPageList(array $where, $pageSize = 10, array $order, $field = '*', $pageName = 'page')
+    public function getPageList(array $where, int $pageSize = 10, array $order, array $field = ['*'], string $pageName = 'page')
     {
 
         $this->applyWhere($where)->applyOrder($order);
@@ -85,16 +85,31 @@ class HelperQueryBuilder extends Builder
 
     /**
      * 创建或者是修改
-     * @param        $saveData
+     * @param array $saveData
      * @return mixed 创建成功返回成功后的主键Id，修改成功返回受影响的记录行数
      * @author: Mikey
      */
-    public function saveInfo($saveData)
+    public function saveInfo(array $saveData)
     {
-        $this->fill($saveData);
-        parent::save();
+        if(!empty($saveData['id'])){
+            $this->model->setRawAttributes(['id' => $saveData['id']], true);
+            $this->model->exists = true;
+        }
+
+        $this->model->fill($saveData);
+        return $this->model->save($saveData);
     }
 
+    /**
+     * 删除
+     * @param $id
+     * @return mixed
+     * @author: Mikey
+     */
+    public function del($id)
+    {
+        return $this->applyWhere(['id' => $id])->delete();
+    }
 
     /**
      * 组合where参数
@@ -107,7 +122,7 @@ class HelperQueryBuilder extends Builder
             //例如 ['name' => ['like'=> 'sss']]
             foreach ($where as $key => $value) {
                 // 如果第二个参数是字符串，则表示默认使用 = 操作符
-                if (is_array($value['1'])) {
+                if (is_array($value)) {
                     // 第二个参数是数组
                     switch (!empty($value['0']) && strtolower($value['0'])) {
                         case 'in' :
@@ -144,7 +159,10 @@ class HelperQueryBuilder extends Builder
     {
         // 例如：['sort' => 'desc','id' => 'desc']
         foreach ($order as $field => $option) {
-            $this->model = $this->model->orderBy($field, $option);
+            if (strtolower($option) !== 'desc' && strtolower($option) !== 'asc') {
+                continue;
+            }
+            $this->orderBy($field, $option);
         }
 
         return $this;
