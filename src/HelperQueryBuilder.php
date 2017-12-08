@@ -15,6 +15,9 @@ class HelperQueryBuilder extends Builder
     public function setHelperModel($model)
     {
         $this->model = $model;
+        $this->query->from($model->getTable());
+
+        return $this;
     }
 
     /**
@@ -70,7 +73,7 @@ class HelperQueryBuilder extends Builder
      * @param array  $where
      * @param int    $pageSize
      * @param array  $order
-     * @param array $field
+     * @param array  $field
      * @param string $pageName
      * @return mixed
      * @author: Mikey
@@ -83,22 +86,6 @@ class HelperQueryBuilder extends Builder
         return $this->paginate($pageSize, $field, $pageName);
     }
 
-    /**
-     * 创建或者是修改
-     * @param array $saveData
-     * @return mixed 创建成功返回成功后的主键Id，修改成功返回受影响的记录行数
-     * @author: Mikey
-     */
-    public function saveInfo(array $saveData)
-    {
-        if(!empty($saveData['id'])){
-            $this->model->setRawAttributes(['id' => $saveData['id']], true);
-            $this->model->exists = true;
-        }
-
-        $this->model->fill($saveData);
-        return $this->model->save($saveData);
-    }
 
     /**
      * 删除
