@@ -15,9 +15,52 @@ class HelperQueryBuilder extends Builder
     public function setHelperModel($model)
     {
         $this->model = $model;
-        $this->query->from($model->getTable());
 
         return $this;
+    }
+
+    /**
+     * 创建或者是修改
+     * @param array $saveData
+     * @return mixed 创建成功返回成功后的主键Id，修改成功返回受影响的记录行数
+     * @author: Mikey
+     */
+    public function saveInfo(array $saveData)
+    {
+        if (!empty($saveData['id'])) {
+            $this->model->setRawAttributes(['id' => $saveData['id']], true);
+            $this->model->exists = true;
+        }
+
+        $this->model->fill($saveData);
+
+        return $this->model->save($saveData);
+    }
+
+    /**
+     * $saveData 如果是以为数组走保存更新，
+     * [['id'=>1,'name'=>'1'],['id'=>'2','name'=>'2']]
+     * @param array $saveData
+     * @return mixed
+     * @author: Mikey
+     */
+    public function insertAll(array $saveData)
+    {
+        if (!is_array(reset($saveData))) {
+            return $this->saveInfo($saveData);
+        }
+
+        $query = $this->model->newQueryWithoutScopes();
+        foreach ($saveData as $k => $v) {
+            if ($this->model->usesTimestamps()) {
+                $time = $this->model->freshTimestamp();
+                $v['created_at'] = $time;
+                $v['updated_at'] = $time;
+            }
+            $saveData[$k] = $v;
+        }
+
+        $query->insert($saveData);
     }
 
     /**
