@@ -15,52 +15,6 @@ class HelperQueryBuilder extends Builder
     public function setHelperModel($model)
     {
         $this->model = $model;
-
-        return $this;
-    }
-
-    /**
-     * 创建或者是修改
-     * @param array $saveData
-     * @return mixed 创建成功返回成功后的主键Id，修改成功返回受影响的记录行数
-     * @author: Mikey
-     */
-    public function saveInfo(array $saveData)
-    {
-        if (!empty($saveData['id'])) {
-            $this->model->setRawAttributes(['id' => $saveData['id']], true);
-            $this->model->exists = true;
-        }
-
-        $this->model->fill($saveData);
-
-        return $this->model->save($saveData);
-    }
-
-    /**
-     * $saveData 如果是以为数组走保存更新，
-     * [['id'=>1,'name'=>'1'],['id'=>'2','name'=>'2']]
-     * @param array $saveData
-     * @return mixed
-     * @author: Mikey
-     */
-    public function insertAll(array $saveData)
-    {
-        if (!is_array(reset($saveData))) {
-            return $this->saveInfo($saveData);
-        }
-
-        $query = $this->model->newQueryWithoutScopes();
-        foreach ($saveData as $k => $v) {
-            if ($this->model->usesTimestamps()) {
-                $time = $this->model->freshTimestamp();
-                $v['created_at'] = $time;
-                $v['updated_at'] = $time;
-            }
-            $saveData[$k] = $v;
-        }
-
-        $query->insert($saveData);
     }
 
     /**
@@ -116,7 +70,7 @@ class HelperQueryBuilder extends Builder
      * @param array  $where
      * @param int    $pageSize
      * @param array  $order
-     * @param array  $field
+     * @param array $field
      * @param string $pageName
      * @return mixed
      * @author: Mikey
@@ -129,6 +83,22 @@ class HelperQueryBuilder extends Builder
         return $this->paginate($pageSize, $field, $pageName);
     }
 
+    /**
+     * 创建或者是修改
+     * @param array $saveData
+     * @return mixed 创建成功返回成功后的主键Id，修改成功返回受影响的记录行数
+     * @author: Mikey
+     */
+    public function saveInfo(array $saveData)
+    {
+        if(!empty($saveData['id'])){
+            $this->model->setRawAttributes(['id' => $saveData['id']], true);
+            $this->model->exists = true;
+        }
+
+        $this->model->fill($saveData);
+        return $this->model->save($saveData);
+    }
 
     /**
      * 删除
@@ -152,15 +122,18 @@ class HelperQueryBuilder extends Builder
             //例如 ['name' => ['like'=> 'sss']]
             foreach ($where as $key => $value) {
                 // 如果第二个参数是字符串，则表示默认使用 = 操作符
+                // 第二个参数是数组
                 if (is_array($value)) {
-                    // 第二个参数是数组
-                    switch (!empty($value['0']) && strtolower($value['0'])) {
-                        case 'in' :
-                            $this->whereIn($key, $value[1]);
-                            break;
+                    // 如果操作符为空，则取默认值
+                    $type = 'default';
+                    !empty($str) && $type = strtolower($str);
+                    switch ($type) {
                         case 'between' :
                             // 例子 $where = ['age',['between',[1,10]]];
                             $this->whereBetween($key, $value[1]);
+                            break;
+                        case 'in' :
+                            $this->whereIn($key, $value[1]);
                             break;
                         case 'notbetween' :
                             // 例子 $where = ['age',['notbetween',[1,10]]];
