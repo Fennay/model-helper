@@ -47,9 +47,9 @@ class Model extends EloquentModel
 
     /**
      * 设置缓存key
-     * @param $key
+     * @param null $key
      */
-    public function setCacheKey($key)
+    public function setCacheKey($key = null)
     {
         if (empty($key)) {
             $this->cacheKey = '';

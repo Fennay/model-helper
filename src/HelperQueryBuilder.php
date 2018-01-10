@@ -148,7 +148,7 @@ class HelperQueryBuilder extends Builder
     protected function clearCache()
     {
         // 清除first中自动缓存的keys
-        Cache::forget($this->model->setCacheKey);
+        Cache::forget($this->model->getCacheKey());
 
         if (empty($clearKeys = $this->model->clearKeys)) {
             return true;
