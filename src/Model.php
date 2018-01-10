@@ -9,7 +9,7 @@ namespace Fennay\ModelHelper;
 
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 
-abstract class Model extends EloquentModel
+class Model extends EloquentModel
 {
     /**
      * @var array 更新数据需删除的缓存key列表
