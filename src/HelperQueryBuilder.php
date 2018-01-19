@@ -26,11 +26,11 @@ class HelperQueryBuilder extends Builder
     {
         // 取得设置的缓存key
         $cacheKey = $this->model->getCacheKey();
-        // dump($cacheKey);
+        // 清空cacheey，此key本轮就失效
+        $this->model->setCacheKey();
         // 如果没有设置缓存key，则不缓存，直接取数据
         if (empty($cacheKey)) {
             $rs = parent::get();
-
             return $rs;
         }
         // 通过key未取得缓存数据，则查询数据库获取数据，
@@ -38,9 +38,6 @@ class HelperQueryBuilder extends Builder
         if (empty($cacheData = Cache::get($cacheKey))) {
             $data = parent::get($columns);
             Cache::put($cacheKey, $data, $this->model->cacheExpire);
-            $this->model->setCacheKey('');
-
-            // dump($this->model->getCacheKey());
             return $data;
         } else {
             return $cacheData;
@@ -58,8 +55,9 @@ class HelperQueryBuilder extends Builder
     {
         $this->applyWHere($where);
         $this->applyOrder($orderBy);
-
-        // $this->model->setCacheKey = $this->model->table . '_by_where_' . md5(serialize($where)) . '_and_order_' . md5(serialize($orderBy));
+        // $this->model->debug = 'detail';
+        // $cacheKey = $this->model->table . '_by_where_' . md5(serialize($where)) . '_and_order_' . md5(serialize($orderBy));
+        // $this->model->setCacheKey($cacheKey);
 
         return $this->first();
     }
