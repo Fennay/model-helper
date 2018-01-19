@@ -35,10 +35,11 @@ class HelperQueryBuilder extends Builder
         }
         // 通过key未取得缓存数据，则查询数据库获取数据，
         // 取得缓存数据就直接返回缓存数据
-        if (true || empty($cacheData = Cache::get($cacheKey))) {
+        if (empty($cacheData = Cache::get($cacheKey))) {
             $data = parent::get($columns);
             Cache::put($cacheKey, $data, $this->model->cacheExpire);
             $this->model->setCacheKey('');
+
             // dump($this->model->getCacheKey());
             return $data;
         } else {
@@ -57,6 +58,7 @@ class HelperQueryBuilder extends Builder
     {
         $this->applyWHere($where);
         $this->applyOrder($orderBy);
+
         // $this->model->setCacheKey = $this->model->table . '_by_where_' . md5(serialize($where)) . '_and_order_' . md5(serialize($orderBy));
 
         return $this->first();
@@ -149,12 +151,20 @@ class HelperQueryBuilder extends Builder
     {
         // 清除first中自动缓存的keys
         Cache::forget($this->model->getCacheKey());
-
+        $cachePrefix = Cache::getPrefix();
         if (empty($clearKeys = $this->model->clearKeys)) {
             return true;
         }
         foreach ($clearKeys as $k => $v) {
-            Cache::forget($v);
+            if(false != stripos('*',$v) && 'redis' == Cache::getDefaultDriver()){
+                $realKeyArr = Cache::getRedis()->keys($cachePrefix . $v);
+                foreach ($realKeyArr as $ck => $vk) {
+                    $realKey = str_replace($cachePrefix,'',$vk);
+                    Cache::forget($realKey);
+                }
+            }else{
+                Cache::forget($v);
+            }
         }
 
         return true;
@@ -185,7 +195,8 @@ class HelperQueryBuilder extends Builder
                 // 第二个参数是数组
                 if (is_array($value)) {
                     // 如果操作符为空，则取默认值
-                    $type = empty($value[0]) ? 'default' : strtolower($value[0]);
+                    $type = 'default';
+                    !empty($value[0]) && ($type = strtolower($value[0]));
                     switch ($type) {
                         case 'between' :
                             // 例子 $where = ['age',['between',[1,10]]];
