@@ -154,7 +154,7 @@ class HelperQueryBuilder extends Builder
             return true;
         }
         foreach ($clearKeys as $k => $v) {
-            if((false != stripos('*',$v)) && 'redis' == Cache::getDefaultDriver()){
+            if((false != stripos($v,'*')) && 'redis' == Cache::getDefaultDriver()){
                 $realKeyArr = Cache::getRedis()->keys($cachePrefix . $v);
                 foreach ($realKeyArr as $ck => $vk) {
                     $realKey = str_replace($cachePrefix,'',$vk);
