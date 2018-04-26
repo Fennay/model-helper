@@ -53,7 +53,7 @@ class HelperQueryBuilder extends Builder
      */
     public function findOne(array $where, array $orderBy = ['id' => 'desc'])
     {
-        $this->applyWHere($where);
+        $this->applyWhere($where);
         $this->applyOrder($orderBy);
         // $this->model->debug = 'detail';
         // $cacheKey = $this->model->table . '_by_where_' . md5(serialize($where)) . '_and_order_' . md5(serialize($orderBy));
