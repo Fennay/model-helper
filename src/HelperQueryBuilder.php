@@ -128,6 +128,7 @@ class HelperQueryBuilder extends Builder
      */
     public function saveInfo(array $saveData)
     {
+        $this->model->exists = false;
         if (!empty($saveData['id'])) {
             $this->model->setRawAttributes(['id' => $saveData['id']], true);
             $this->model->exists = true;
