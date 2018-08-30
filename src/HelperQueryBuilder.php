@@ -126,48 +126,48 @@ class HelperQueryBuilder extends Builder
      * @return mixed 创建成功返回成功后的主键Id，修改成功返回受影响的记录行数
      * @author: Mikey
      */
-    public function saveInfo(array $saveData)
-    {
-        $this->model->exists = false;
-        if (!empty($saveData['id'])) {
-            $this->model->setRawAttributes(['id' => $saveData['id']], true);
-            $this->model->exists = true;
-        }
+//     public function saveInfo(array $saveData)
+//     {
+//         $this->model->exists = false;
+//         if (!empty($saveData['id'])) {
+//             $this->model->setRawAttributes(['id' => $saveData['id']], true);
+//             $this->model->exists = true;
+//         }
 
-        $this->model->fill($saveData);
-        $result = $this->model->save($saveData);
-        // 清除缓存
-        $this->clearCache();
+//         $this->model->fill($saveData);
+//         $result = $this->model->save($saveData);
+//         // 清除缓存
+//         $this->clearCache();
 
-        return $result;
-    }
+//         return $result;
+//     }
 
     /**
      * 清除缓存
      * @return bool
      */
-    protected function clearCache()
-    {
-        // 清除first中自动缓存的keys
-        Cache::forget($this->model->getCacheKey());
-        $cachePrefix = Cache::getPrefix();
-        if (empty($clearKeys = $this->model->clearKeys)) {
-            return true;
-        }
-        foreach ($clearKeys as $k => $v) {
-            if((false != stripos($v,'*')) && 'redis' == Cache::getDefaultDriver()){
-                $realKeyArr = Cache::getRedis()->keys($cachePrefix . $v);
-                foreach ($realKeyArr as $ck => $vk) {
-                    $realKey = str_replace($cachePrefix,'',$vk);
-                    Cache::forget($realKey);
-                }
-            }else{
-                Cache::forget($v);
-            }
-        }
+//     protected function clearCache()
+//     {
+//         // 清除first中自动缓存的keys
+//         Cache::forget($this->model->getCacheKey());
+//         $cachePrefix = Cache::getPrefix();
+//         if (empty($clearKeys = $this->model->clearKeys)) {
+//             return true;
+//         }
+//         foreach ($clearKeys as $k => $v) {
+//             if((false != stripos($v,'*')) && 'redis' == Cache::getDefaultDriver()){
+//                 $realKeyArr = Cache::getRedis()->keys($cachePrefix . $v);
+//                 foreach ($realKeyArr as $ck => $vk) {
+//                     $realKey = str_replace($cachePrefix,'',$vk);
+//                     Cache::forget($realKey);
+//                 }
+//             }else{
+//                 Cache::forget($v);
+//             }
+//         }
 
-        return true;
-    }
+//         return true;
+//     }
 
     /**
      * 删除
