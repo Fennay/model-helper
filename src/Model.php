@@ -8,6 +8,7 @@
 namespace Fennay\ModelHelper;
 
 use Illuminate\Database\Eloquent\Model as EloquentModel;
+use Cache;
 
 abstract class Model extends EloquentModel
 {
@@ -65,5 +66,59 @@ abstract class Model extends EloquentModel
     public function getCacheKey()
     {
         return $this->cacheKey;
+    }
+    
+    public function saveInfo(array $saveData)
+    {
+        //if (!empty($saveData['id'])) {
+        //    $this->model->setRawAttributes(['id' => $saveData['id']], true);
+        //    $this->model->exists = true;
+        //}
+        //
+        //$this->model->fill($saveData);
+        //$result = $this->model->save($saveData);
+        //// 清除缓存
+        //$this->clearCache();
+        //
+        //return $result;
+
+        if (!empty($saveData['id'])) {
+            $this->setRawAttributes(['id' => $saveData['id']], true);#刻意将主键传给syncOriginal
+            $this->exists = true;
+        } else {
+            $this->setRawAttributes($saveData, true);#刻意将主键不给syncOriginal
+            $this->exists = false;
+        }
+        $this->fill($saveData);
+        $this->clearCache();
+
+        return parent::save($saveData);
+    }
+
+    /**
+     * 清除缓存
+     * @return bool
+     */
+    protected function clearCache()
+    {
+        // 清除first中自动缓存的keys
+        Cache::forget($this->getCacheKey());
+        $cachePrefix = Cache::getPrefix();
+        if (empty($clearKeys = $this->clearKeys)) {
+            return true;
+        }
+        foreach ($clearKeys as $k => $v) {
+            if ((false != stripos($v, '*')) && 'redis' == Cache::getDefaultDriver()) {
+                $realKeyArr = Cache::getRedis()->keys($cachePrefix . $v);
+                foreach ($realKeyArr as $ck => $vk) {
+                    $realKey = str_replace($cachePrefix, '', $vk);
+                    Cache::forget($realKey);
+                }
+            } else {
+                Cache::forget($v);
+            }
+        }
+
+        return true;
     }
 }
